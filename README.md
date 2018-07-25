@@ -4,12 +4,11 @@ Keyst.
 
  ʕ•ﻌ•ʔ     ʕ•ﻌ•ʔ  
 ( >  <) ♡ (>  < )  
- u   u     u   u  
 
 feat. peepee  
 with love...  
 
---COMMENT--  
+#### COMMENT:  
 파일 이름은 'tenminscan.xlsx' 그리고 'hankyung.xlsx'로 저장한 후에 폴더 안에 넣는다.  
 제대론 된 형식의 파일들이 이 프로그램과 같은 폴더 안에 있다면, 프로그램을 실행시킨다.  
 
