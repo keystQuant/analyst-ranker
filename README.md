@@ -18,6 +18,9 @@ with love...
 2. tenminscan.xlsx, hankyung.xlsx를 이 프로그램이 있는 폴더 안에 넣는다.  
 3. 아래의 코드를 사용한다:  
 ```
-python rank_analyst.py
+WINDOW + r (윈도우 컴퓨터에서 실행기를 연다)
+powershell (파워쉘 커맨드창을 연다)
+cd <프로그램이 있는 폴더 경로>
+python rank_analysts.py
 ```
 4. output.xlsx 파일을 열어본다.
