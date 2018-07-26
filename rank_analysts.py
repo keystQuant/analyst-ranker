@@ -33,12 +33,15 @@ hankyung_report_start_index = 0
 
 for index in range(hankyung['Unnamed: 2'].shape[0]):
     value = hankyung['Unnamed: 2'].iloc[index]
-    if  value == 1:
+    if value == 1:
         hankyung_report_start_index = index
         break
 
+print('산업 데이터 시작 인덱스: {}'.format(index))
+
 # 리포트가 시작하는 위치 이전의 값들을 제거한 한경리포트 DataFrame을 만든다
 clean_hankyung = hankyung.loc[hankyung_report_start_index:, :'Unnamed: 1']
+clean_hankyung.head()
 
 # 산업별 애널들의 이름과 랭킹을 묶어서 리스트에 넣어준다
 dataset = []
@@ -80,7 +83,8 @@ for flatdata in dataset:
         if datadict[key] == None:
             datadict[key] = [value]
         else:
-            datadict[key] = datadict[key].append(value)
+            new_value = datadict[key] + [value] # append로 리스트에 값을 추가해주면 이상하게 None이 리턴된다
+            datadict[key] = new_value
 
 
 ## STEP 2:
@@ -100,46 +104,36 @@ while index < col_len:
         rank_list.append(np.nan) # 루프를 그냥 넘기기 전에 rank_list에 nan값을 채워준다
         index += 1
         continue
+    # 진짜 데이터 프로세싱 시작:
     else:
-        affiliation = tenminscan['Unnamed: 2'].iloc[index + 1][:2]
-        if '.' in analyst:
-            analyst = analyst.split('.')
-        else:
-            analyst = [analyst]
+        affiliation = tenminscan['Unnamed: 2'].iloc[index + 1][:2] # 앞 두 글자만 가져오기
+        analyst = analyst.split(' ')[0] if ' ' in analyst else analyst # '이름 외 2명' 같은 형식의 데이터 처리
+        analyst = analyst.split('.') if '.' in analyst else [analyst] # 두 명 이상인 경우 리스트로 스플릿하고, 아니면 하나의 엘레먼트만 있는 리스트이다
 
         print('**DATA: {}, {}'.format(analyst, affiliation))
+
         final_data = ''
         for a in analyst:
             # datadict를 들고와서 키값을 찾는다
-            rank_exists = False
             for key, value in datadict.items():
                 if (affiliation in key) and (a in key):
-                    rank_exists = True
-                    print('{}: {}'.format(key, value)) # 애널리스트 딕셔너리에서 찾음
-                    if value != None:
-                        print('데이터 있음, 랭킹 데이터 가져오기')
-                        # 밸류가 None이 아니면 랭킹 데이터를 넣어준다
-                        all_values = ''
-                        if len(value) != 1:
-                            for v in value:
-                                all_values = all_values + v + '|'
-                        else:
-                            all_values = value[0]
-                        break
+                    # 소속과 애널리스트가 모두 일치한다면...
+                    print('{}: {}'.format(key, value)) # 값 프린트 (디버깅용)
+                    print('데이터 있음, 랭킹 데이터 가져오기')
+                    # 밸류가 None이 아니면 랭킹 데이터를 넣어준다
+                    all_values = ''
+                    if len(value) != 1:
+                        for v in value:
+                            all_values = '{0} {1} ({2})'.format(all_values, v, a)
                     else:
-                        print('데이터 없음')
-                        break
-                else:
-                    rank_exists = False
+                        all_values = '{0} ({1})'.format(value[0], a)
+                    break
+                else: # if (affiliation in key) and (a in key):
                     # 딕셔너리 키를 모두 돌려 확인하기 때문에 여러번 돈다
                     all_values = ''
-
-            # 애널리스트가 한 명이면 | 없애기,
-            # 애널리스트가 여러명이면 두기
-            if len(analyst) == 1:
-                final_data = final_data + all_values
-            else:
-                final_data = final_data + all_values + '|'
+            ##### for key, value in datadict.items(): #####
+            final_data = final_data + all_values + ' '
+        ##### for a in analyst: 여기서 끝 #####
 
         print('리턴 데이터: {}'.format(final_data))
 
