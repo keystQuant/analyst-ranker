@@ -96,12 +96,14 @@ col_len = tenminscan['Unnamed: 2'].shape[0] # DataFrame의 길이
 
 index = 0 # DataFrame의 첫 번째 값부터 가져와서 루프를 돌린다
 rank_list = [] # 랭킹을 찾아서 리스트 안에 넣는다. (주의: DF의 인덱스 넘버와 length가 일치해야한다)
+sort_list = [] # 소팅 리스트를 만들어서, 랭킹이 높은 애널리스트들의 항목을 df에서 위로 올린다
 
 while index < col_len:
     analyst = tenminscan['Unnamed: 2'].iloc[index] # 애널리스트의 이름을 가져온다
     if pd.isnull(analyst) or analyst == '작성자':
         # 애널리스트의 이름이 아닌 nan 혹은 증권사의 이름일 경우 루프를 넘긴다
         rank_list.append(np.nan) # 루프를 그냥 넘기기 전에 rank_list에 nan값을 채워준다
+        sort_list.append(999) # 999를 넣어서 랭킹이 낮은 항목을 위로 올린다
         index += 1
         continue
     # 진짜 데이터 프로세싱 시작:
@@ -112,6 +114,7 @@ while index < col_len:
 
         print('**DATA: {}, {}'.format(analyst, affiliation))
 
+        ranks = [] # 소팅 리스트에 추가하기 위해서 그 행 데이터 총 랭킹의 최저 랭킹을 뽑아낸다
         final_data = ''
         for a in analyst:
             # datadict를 들고와서 키값을 찾는다
@@ -125,8 +128,10 @@ while index < col_len:
                     if len(value) != 1:
                         for v in value:
                             all_values = '{0} {1} ({2})'.format(all_values, v, a)
+                            ranks.append(v.split(' ')[-1])
                     else:
                         all_values = '{0} ({1})'.format(value[0], a)
+                        ranks.append(value[0].split(' ')[-1])
                     break
                 else: # if (affiliation in key) and (a in key):
                     # 딕셔너리 키를 모두 돌려 확인하기 때문에 여러번 돈다
@@ -139,13 +144,22 @@ while index < col_len:
 
         rank_list.append(final_data)
         rank_list.append(np.nan)
+        if len(ranks) != 0:
+            sort_list.append(min(ranks))
+            sort_list.append(999)
+        else:
+            sort_list.append(999)
+            sort_list.append(999)
         index += 2
         print('\n')
 
 # 새로운 열을 만들어서 랭킹 데이터 추가하기
 tenminscan['랭킹'] = rank_list
+tenminscan['sort'] = [int(rank) for rank in sort_list]
 
 # 엑셀로 저장하기
+tenminscan.sort_values(by='sort', ascending=True, inplace=True)
+tenminscan = tenminscan.drop(['sort'], axis=1)
 writer = pd.ExcelWriter('output.xlsx')
 tenminscan.to_excel(writer, 'Sheet1')
 writer.save()
